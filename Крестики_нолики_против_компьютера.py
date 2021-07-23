@@ -1,14 +1,14 @@
 import time
 import random
 
-def special_print(text):
+def special_print(text):       #Вывод выделенного сообщения 
     stroka_razdelenya = "- - - - - - - - - - - - - - - - - - - - - - - - "
-    time.sleep(0.5)
+    time.sleep(0.3)
     print(stroka_razdelenya)
     print(text)
     print(stroka_razdelenya)
     
-def game_field(list, message):
+def game_field(list, message):     #Вывод игрового поля
     print("\n"+message)
     for i in range(3):
         print(" ", list[i][0], "|", list[i][1], "|", list[i][2])
@@ -17,7 +17,7 @@ def game_field(list, message):
     print()
     return 0
 
-def win_check(list, simvol):
+def win_check(list, simvol):       #Проверка, не выиграл ли игрок с данным символом
     if list[0][0] == list[1][1] == list[2][2] == simvol:
             return 1
     if list[2][0] == list[1][1] == list[0][2] == simvol:
@@ -30,7 +30,22 @@ def win_check(list, simvol):
             return 1
     return 0
 
-def two_in_row_check(list, simvol1, simvol2):
+def ending_check(list, schetchik, simvol1, simvol2):     #Проверка, какой игрок выиграл, и проверка на ничью
+    if win_check(list, simvol1) == 1:
+        print()
+        special_print("Вы победили!")
+        return 1
+    if win_check(list, simvol2) == 1:
+        print()
+        special_print("Победил компьютер =(((")
+        return 1
+    if schetchik == 9:
+        print()
+        special_print("Ничья")
+        return 1
+    return 0
+
+def two_in_row_check(list, simvol1, simvol2):        #Нахождение ряда, в которой можно поставить третий символ и выиграть
     k = 0
     position = 0
     for i in range(3):
@@ -44,7 +59,7 @@ def two_in_row_check(list, simvol1, simvol2):
     for i in range(3):
         k += int(list[2-i][i] == simvol1) - int(list[2-i][i] == simvol2)
         if list[2-i][i] not in [simvol1, simvol2]:
-            position = 3*(2 - i)+i
+            position = 3*(2-i)+i
     if k == 2:
         return position
 
@@ -61,27 +76,12 @@ def two_in_row_check(list, simvol1, simvol2):
         k = 0
         for j in range(3):
             k += int(list[j][i] == simvol1) - int(list[j][i] == simvol2)
-            if list[j][i] not in ['x','o']:
+            if list[j][i] not in [simvol1,simvol2]:
                 position = j*3+i
         if k == 2:
             return position
 
     return -1   
-
-def ending_check(list, schetchik):
-    if win_check(list, 'x') == 1:
-        print()
-        special_print("Вы победили!")
-        return 1
-    if win_check(list, 'o') == 1:
-        print()
-        special_print("Победил компьютер =(")
-        return 1
-    if schetchik == 9:
-        print()
-        special_print("Ничья")
-        return 1
-    return 0
 
 list = [[1,2,3], [4,5,6], [7,8,9]]
 stroka_razdelenya = "- - - - - - - - - - - - - - - - - - - - - - - - "
@@ -90,30 +90,28 @@ print()
 special_print('Приветствуем вас в игре "крестики-нолики против компьтера!')
 print()
 
-print()
 difficulty = ""
-while difficulty != "П" and difficulty != "С":
-    difficulty = input("Выберите сложность(простая или сложная) П/C \n")
+while difficulty not in ["СР","ПР"]:
+    difficulty = input("Выберите сложность(простая или средняя) Пр/Cр \n")
     difficulty = difficulty.upper()
-    if difficulty != "П" and difficulty != "С":
+    if difficulty not in ["СР","ПР"]:
         print("\nНекорректный ввод, попробуйте еще раз:")
 
-#if vibor_hoda == "Д" and difficulty == "С":
 
 end_of_game = 0
-simvol = ''
 schetchik = 0
 answers = []
 print()
 game_field(list, "Текущее поле:")
+simvol1 = 'X'
+simvol2 = 'o'
 
-while end_of_game == 0:
+while end_of_game == 0:            #Ход игрока
     valid = 0
-    simvol = 'x'
     while not valid:
         print()
         print(stroka_razdelenya)
-        answer = input("Введите номер свободного поля, чтобы поставить " + simvol + ": ")
+        answer = input("Введите номер свободного поля, чтобы поставить " + simvol1 + ": ")
         print(stroka_razdelenya)
         try:
             answer = int(answer)
@@ -125,34 +123,32 @@ while end_of_game == 0:
         else:
             print ("Вы уверены, что ввели номер свободного поля?")
       
-    list[(answer-1)//3][(answer-1)%3] = simvol
+    list[(answer-1)//3][(answer-1)%3] = simvol1     #Изменение и отображение игрового поля
     print()
     schetchik += 1
     answers.append(answer)
     game_field(list, "Текушее поле")
 
-    end_of_game = ending_check(list, schetchik)
+    end_of_game = ending_check(list, schetchik, simvol1, simvol2)     #Проверка на окончание игры
         
-    if schetchik != 9 and end_of_game != 1:
-        print(stroka_razdelenya)
-        print("Ход компьютера...")
-        print(stroka_razdelenya)
-        time.sleep(2)
-        position1 = two_in_row_check(list, 'o', 'x')
-        position2 = two_in_row_check(list, 'x', 'o')
-        if position1 != -1:
-            list[position1//3][position1%3] = 'o'
-        elif position2 != -1:
-            list[position2//3][position2%3] = 'o'
+    if schetchik != 9 and end_of_game != 1:         #Ход компьютера
+        special_print("Ход компьютера...")
+        time.sleep(1)
+        position1 = two_in_row_check(list, simvol2, simvol1)
+        position2 = two_in_row_check(list, simvol1, simvol2)
+        if position1 != -1 and difficulty != "ПР":
+            list[position1//3][position1%3] = simvol2
+        elif position2 != -1  and difficulty != "ПР":
+            list[position2//3][position2%3] = simvol2
         else:
             i = 0
             j = 0
-            while list[i][j] in ['x','o']:
+            while list[i][j] in [simvol1,simvol2]:
                 i = random.choice([0,1,2])
                 j = random.choice([0,1,2])
-            list[i][j] = 'o'
+            list[i][j] = simvol2
         schetchik += 1
         game_field(list,"Компьютер походил:")
 
-    if end_of_game != 1:
-        end_of_game = ending_check(list, schetchik)
+    if end_of_game != 1:                              #Вторая проверка на окончание игры
+        end_of_game = ending_check(list, schetchik, simvol1, simvol2)
